@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>kboe</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    h2 { margin-top: 40px; }
+    #youtube-results, #google-results, #wiki-content {
+      margin-top: 20px;
+    }
+    .yt-item { width: 200px; cursor: pointer; margin: 10px; display: inline-block; }
+    .yt-item img { width: 100%; border-radius: 6px; }
+    .yt-title { font-size: 14px; margin-top: 4px; }
+
+    .g-item { margin-bottom: 20px; }
+    .g-title { font-size: 18px; color: #1a0dab; }
+    .g-url { font-size: 14px; color: #006621; }
+    .g-snippet { font-size: 14px; }
+
+    #player { margin-top: 40px; }
+  </style>
+</head>
+<body>
+
+<h1>kboe</h1>
+<p>総合検索サイト（YouTube / Google風検索 / Wikipedia）</p>
+
+<!-- YouTube検索 -->
+<h2>YouTube検索</h2>
+<input id="yt-query" placeholder="YouTube検索ワード">
+<button onclick="ytSearch()">検索</button>
+
+<div id="youtube-results"></div>
+
+<!-- Google検索風 -->
+<h2>Google検索風</h2>
+<input id="g-query" placeholder="Google検索ワード">
+<button onclick="gSearch()">検索</button>
+
+<div id="google-results"></div>
+
+<!-- Wikipedia検索 -->
+<h2>Wikipedia検索</h2>
+<input id="wiki-query" placeholder="Wikipedia検索ワード">
+<button onclick="wikiSearch()">検索</button>
+
+<div id="wiki-content"></div>
+
+<!-- YouTubeプレイヤー -->
+<h2>再生プレイヤー</h2>
+<iframe id="player" width="560" height="315"
+  src=""
+  allowfullscreen></iframe>
+
+<script>
+/* ------------------------------
+   APIキー設定（必須）
+------------------------------ */
+const YT_API_KEY = "AIzaSyCAyOt_qAG3RN9PQoABis0PL7o-UWycF7o"; 
+const G_API_KEY  = "AIzaSyCAyOt_qAG3RN9PQoABis0PL7o-UWycF7o";
+const G_CX       = "b53603184e4f64795";
+
+
+/* ------------------------------
+   YouTube検索
+------------------------------ */
+function ytSearch() {
+  const q = document.getElementById("yt-query").value;
+
+  fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${q}&key=${YT_API_KEY}`)
+    .then(res => res.json())
+    .then(data => {
+      const box = document.getElementById("youtube-results");
+      box.innerHTML = "";
+
+      data.items.forEach(item => {
+        const id = item.id.videoId;
+        const thumb = item.snippet.thumbnails.medium.url;
+        const title = item.snippet.title;
+
+        const div = document.createElement("div");
+        div.className = "yt-item";
+        div.onclick = () => {
+          document.getElementById("player").src =
+            `https://www.youtube.com/embed/${id}`;
+        };
+
+        div.innerHTML = `
+          <img src="${thumb}">
+          <div class="yt-title">${title}</div>
+        `;
+
+        box.appendChild(div);
+      });
+    });
+}
+
+/* -----------------------------------
+   Google検索
+----------------------------------- */
+function gSearch() {
+    const q = document.getElementById("g-query").value;
+
+    const API_KEY = "AIzaSyCAyOt_qAG3RN9PQoABis0PL7o-UWycF7o";
+    const CX = "b53603184e4f64795";
+
+    fetch(`https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CX}&q=${q}`)
+        .then(res => res.json())
+        .then(data => {
+            const box = document.getElementById("google-result");
+            box.innerHTML = "";
+
+            data.items.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "g-item";
+
+                div.innerHTML = `
+                    <div class="g-title">
+                        <a href="${item.link}" target="_blank">${item.title}</a>
+                    </div>
+                    <div class="g-url">${item.link}</div>
+                    <div class="g-snippet">${item.snippet}</div>
+                `;
+
+                box.appendChild(div);
+            });
+        })
+        .catch(() => {
+            document.getElementById("google-result").innerHTML =
+                "検索結果を取得できませんでした。";
+        });
+}
+
+/* -----------------------------------
+   Wikipedia検索
+----------------------------------- */
+function wikiSearch() {
+    const q = document.getElementById("wiki-query").value;
+    const api = `https://ja.wikipedia.org/api/rest_v1/page/html/${q}`;
+
+    fetch(api)
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById("wiki-content").innerHTML = html;
+        })
+        .catch(() => {
+            document.getElementById("wiki-content").innerHTML =
+                "ページが見つかりませんでした。";
+        });
+}
+</script>
+
+</body>
+</html>
