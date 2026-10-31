@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 // API handlers
 const youtube = require('./api/youtube');
 const wiki = require('./api/wiki');
-const google = require('./api/google');
+const google = require('./api/tavily');
 
 // API routes
 app.all('/api/youtube', async (req, res, next) => {
