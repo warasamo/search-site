@@ -1,5 +1,4 @@
 module.exports = async function handler(req, res) {
-
   const q = req.query.q;
   const key = process.env.YT_API_KEY;
 
